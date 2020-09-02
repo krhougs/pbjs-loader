@@ -1,6 +1,6 @@
 {
   "name": "pbjs-loader",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Webpack loader for protobuf.js",
   "scripts": {
     "prebuild": "rimraf ./lib && mkdirp ./lib",
