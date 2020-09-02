@@ -26,7 +26,8 @@ export default function () {
 		delimited: true,
 		beautify: false,
 		comments: true,
-		wrap: 'commonjs'
+		wrap: 'commonjs',
+		paths: []
 	};
 
 	const callback = this.async();
@@ -37,6 +38,38 @@ export default function () {
 	const resource = this.resourcePath;
 
 	const root = new ProtoBuf.Root();
+
+	const paths = options.paths;
+
+	paths.push(path.relative(process.cwd(), path.join(require.resolve('protobufjs'), "..")));
+
+	root.resolvePath = function pbjsResolvePath(origin, target) {
+		const normOrigin = ProtoBuf.util.path.normalize(origin);
+		const normTarget = ProtoBuf.util.path.normalize(target);
+
+		const resolved = ProtoBuf.util.path.resolve(normOrigin, normTarget, true);
+
+		const idx = resolved.lastIndexOf("google/protobuf/");
+		if (idx > -1) {
+			const altname = resolved.substring(idx);
+			if (altname in ProtoBuf.common) {
+				resolved = altname;
+			}
+		}
+
+		if (fs.existsSync(resolved)) {
+			return resolved;
+		}
+
+		for (let i = 0; i < paths.length; ++i) {
+			const iresolved = ProtoBuf.util.path.resolve(paths[i] + "/", target);
+			if (fs.existsSync(iresolved)) {
+				return iresolved;
+			}
+		}
+
+		return resolved;
+	};
 
 	if (this.cacheable) { this.cacheable(); }
 
